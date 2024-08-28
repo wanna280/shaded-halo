@@ -74,6 +74,8 @@ tasks.named('jar') {
 dependencies {
     implementation project(':api')
 
+    implementation "io.micrometer:micrometer-registry-prometheus:1.13.3"
+
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor "org.springframework:spring-context-indexer"
 

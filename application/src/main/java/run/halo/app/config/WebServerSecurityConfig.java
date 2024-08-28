@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.session.SessionProperties;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -22,6 +23,7 @@ import org.springframework.session.MapSession;
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.service.RoleService;
 import run.halo.app.core.extension.service.UserService;
 import run.halo.app.extension.ReactiveExtensionClient;
@@ -60,7 +62,21 @@ public class WebServerSecurityConfig {
         HaloProperties haloProperties) {
 
         http.securityMatcher(pathMatchers("/**"))
-            .authorizeExchange(spec -> spec.pathMatchers(
+            .authorizeExchange(spec -> spec
+                // allow localhost to access prometheus
+                .pathMatchers("/actuator/prometheus")
+                .access((mono, context) -> {
+                    final var remoteAddress =
+                        context.getExchange().getRequest().getRemoteAddress();
+                    if (remoteAddress != null && "localhost".equalsIgnoreCase(
+                        remoteAddress.getHostName())) {
+                        return Mono.just(new AuthorizationDecision(true));
+                    }
+                    return new TwoFactorAuthorizationManager(
+                        new RequestInfoAuthorizationManager(roleService)
+                    ).check(mono, context);
+                })
+                .pathMatchers(
                     "/api/**",
                     "/apis/**",
                     "/oauth2/**",
