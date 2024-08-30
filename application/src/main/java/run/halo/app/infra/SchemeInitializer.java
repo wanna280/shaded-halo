@@ -59,7 +59,6 @@ import run.halo.app.infra.utils.JsonUtils;
 import run.halo.app.migration.Backup;
 import run.halo.app.plugin.extensionpoint.ExtensionDefinition;
 import run.halo.app.plugin.extensionpoint.ExtensionPointDefinition;
-import run.halo.app.search.extension.SearchEngine;
 import run.halo.app.security.PersonalAccessToken;
 
 @Component
@@ -73,7 +72,6 @@ public class SchemeInitializer implements ApplicationListener<ApplicationContext
 
         // plugin.halo.run
         schemeManager.register(Plugin.class);
-        schemeManager.register(SearchEngine.class);
         schemeManager.register(ExtensionPointDefinition.class, indexSpecs -> {
             indexSpecs.add(new IndexSpec()
                 .setName("spec.className")
